@@ -47,6 +47,11 @@ nombre = "Juan";
 suma = 5 + 3;
 ```
 
+![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Ejemplo%20Valido%20Lexico.png)
+
+![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Ejemplo%20Valido%20Sintactico.png)
+
+
 ### Entradas Inválidas
 ```
 # Error léxico
@@ -59,8 +64,19 @@ edad = ;
 resultado = x + 5;  // x no está declarada
 ```
 
+![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Ejemplo%20Invalido%20Lexico.png)
+
+![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Ejemplo%20Invalido%20Sintactico.png)
+
+
 ## Máquina de Turing
 El proyecto incluye una implementación de Máquina de Turing para la validación de cadenas con los siguientes estados:
 - Estado inicial: q0
 - Estados finales: q_accept, q_reject
-- Símbolos: 0, 1, _ (espacio en blanco) 
+- Símbolos: 0, 1, _ (espacio en blanco)
+
+- ![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Turing%20Valido.png)
+
+- ![Image_Alt](https://github.com/EduardoAlmeidaPavon/MINI_IDE_WEB/blob/ab7ed3ae61e32a907fa5c3f672d5a7469d57578e/Turing%20Invalido.png)
+
+ 
