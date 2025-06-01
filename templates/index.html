@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini IDE Web</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 3em;
+      letter-spacing: 10px;
+      margin: 0;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      font-weight: bold;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    .header .info {
+      font-size: 1.1em;
+      margin: 0;
+    }
+
+    .header .info p {
+      margin: 3px 0;
+    }
+
+    textarea {
+      background-color: #1a1a1a;
+      color: #ccc;
+      border: none;
+      padding: 15px;
+      width: 80%;
+      max-width: 1200px;
+      height: 200px;
+      font-size: 1.2em;
+      resize: vertical;
+      border-radius: 10px;
+    }
+
+    .button-container {
+      margin-top: 25px;
+    }
+
+    button {
+      background-color: #8000ff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 30px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      box-shadow: 0 4px 10px #2a0e63;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .output-box {
+      margin-top: 30px;
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      width: 80%;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      min-height: 150px;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>MINI IDE WEB</h1>
+    <div class="info">
+      <p><strong>Alumno:</strong> Eduardo Almeida Pavon</p>
+      <p><strong>Profesor:</strong> Ingeniero Kevin Molina Gomez</p>
+      <p><strong>Semestre:</strong> 6 Semestre de 2025</p>
+    </div>
+  </div>
+
+  <textarea id="inputCode" placeholder="Ingresa tus datos aquí..."></textarea>
+
+  <div class="button-container">
+    <button onclick="analyzeLexer()">Analizador Léxico</button>
+    <button onclick="analyzeParser()">Analizador Sintaxis</button>
+    <button onclick="simulateMT()">Simular Mt</button>
+  </div>
+
+  <div class="output-box" id="output"></div>
+
+  <script>
+    let lastTokens = [];
+
+    function formatLexerOutput(data) {
+      let resultado = "TOKENS POR LÍNEA:\n";
+      const lineas = {};
+
+      data.tokens.forEach(token => {
+        const linea = token.linea || "1";
+        if (!lineas[linea]) lineas[linea] = [];
+        lineas[linea].push(`[${token.type.toUpperCase()}: ${token.value}]`);
+      });
+
+      for (const [linea, tokens] of Object.entries(lineas)) {
+        resultado += `Línea ${linea}: ${tokens.join(' ')}\n`;
+      }
+
+      if (data.errors && data.errors.length > 0) {
+        resultado += `\nERRORES LÉXICOS:\n`;
+        data.errors.forEach(err => {
+          resultado += `Línea ${err.linea}: carácter inválido → '${err.valor}'\n`;
+        });
+      }
+
+      return resultado;
+    }
+
+    async function analyzeLexer() {
+      const code = document.getElementById("inputCode").value;
+      const output = document.getElementById("output");
+      try {
+        const response = await fetch("/api/lexer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          output.textContent = formatLexerOutput(data);
+        } else {
+          lastTokens = data.tokens;
+          let lineCounter = 1;
+          lastTokens = lastTokens.map(t => {
+            if (!t.linea) t.linea = lineCounter;
+            if (t.type === 'PUNTUACION' && t.value === ';') lineCounter++;
+            return t;
+          });
+          output.textContent = formatLexerOutput({ tokens: lastTokens });
+        }
+      } catch (err) {
+        output.textContent = "❌ Error al conectar con el servidor.";
+      }
+    }
+
+    async function analyzeParser() {
+      const code = document.getElementById("inputCode").value;
+      const output = document.getElementById("output");
+
+      try {
+        const lexResponse = await fetch("/api/lexer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+
+        const lexData = await lexResponse.json();
+
+        if (!lexResponse.ok) {
+          output.textContent = "❌ Error léxico:\n" + formatLexerOutput(lexData);
+          return;
+        }
+
+        lastTokens = lexData.tokens;
+
+        const parserResponse = await fetch("/api/parser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tokens: lastTokens })
+        });
+
+        const parserData = await parserResponse.json();
+
+        if (!parserData.success) {
+          const errores = parserData.message;
+          let mensaje = "❌ ERRORES SINTÁCTICOS:\n";
+          errores.forEach(e => {
+            mensaje += `Línea ${e.linea}: ${e.mensaje}\n`;
+          });
+          output.textContent = mensaje;
+        } else {
+          output.textContent = `✅ ${parserData.message}`;
+        }
+
+      } catch (err) {
+        output.textContent = "❌ Error de conexión con el servidor.";
+      }
+    }
+
+    async function simulateMT() {
+      const tape = document.getElementById("inputCode").value;
+      const output = document.getElementById("output");
+      try {
+        const response = await fetch("/api/simulate_mt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tape })
+        });
+        const data = await response.json();
+        output.textContent = `✅ ${data.message}\n\nResultado final de la cinta:\n${data.final_tape}`;
+      } catch (err) {
+        output.textContent = "❌ Error al conectar con el servidor.";
+      }
+    }
+  </script>
+
+</body>
+</html>
