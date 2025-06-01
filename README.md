@@ -2,7 +2,7 @@
 
 ## Información del Estudiante
 - **Nombre:** EDUARDO ALMEIDA PAVON
-- **Materia:** Lenguajes y Autómatas II
+- **Materia:** Lenguajes y Autómatas I
 - **Profesor:** KEVIN DAVID MOLINA GOMEZ
 - **Institución:** INSTITUTO TECNOLOGICO DE MINATITLAN
 
